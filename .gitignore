@@ -1,0 +1,6 @@
+/tools/
+/css_build_tmp/
+server/node_modules/
+server/data/
+server/.env
+/dist/

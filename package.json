@@ -1,0 +1,14 @@
+{
+  "name": "magzest-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Magzest website: static files. On Node hosts such as Hostinger, npm start serves them with serve.mjs (no dependencies).",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node -e \"\"",
+    "start": "node serve.mjs"
+  }
+}

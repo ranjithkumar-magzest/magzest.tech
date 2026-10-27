@@ -38,6 +38,10 @@ If `public_html` already has a `.htaccess`, paste the `# BEGIN Magzest security 
 - Send a test from the contact form (check it appears in Bigin) and from the careers form (check the email and the attached resume arrive).
 - Press F12 and look for red Content-Security-Policy errors in the Console.
 
+## Hostinger Node.js app (deploys from GitHub)
+
+If the site is set up in hPanel as a Node.js app connected to this repository, every push to `main` deploys it. Hostinger runs `npm start`, which starts `serve.mjs`: a small server with no dependencies that serves the same public files and sends the same security headers as `.htaccess`. Nothing needs uploading by hand. Leave the root directory as `./`.
+
 ## HTTPS
 
 In **hPanel → Security → SSL**, install the free SSL certificate for the domain if it isn't already on. `.htaccess` tells browsers to always use HTTPS once the site has been visited over HTTPS.

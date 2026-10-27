@@ -49,7 +49,6 @@
   /* ---------- Sticky navbar shadow on scroll + scroll progress ---------- */
   const navbar = document.getElementById("navbar");
   const progressBar = document.getElementById("scroll-progress");
-  const backToTop = document.getElementById("back-to-top");
 
   function onScroll() {
     const scrollTop = window.scrollY;
@@ -58,16 +57,9 @@
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
     if (progressBar) progressBar.style.width = pct + "%";
-
-    if (backToTop) backToTop.classList.toggle("opacity-0", scrollTop < 400);
-    if (backToTop) backToTop.classList.toggle("pointer-events-none", scrollTop < 400);
   }
   document.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
-
-  if (backToTop) {
-    backToTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-  }
 
   /* ---------- Interactive mouse-parallax tilt (hero + service mockups) ---------- */
   if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {

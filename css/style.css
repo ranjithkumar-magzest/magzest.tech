@@ -456,7 +456,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
    Print styles (Company Profile PDF download)
    ========================================================= */
 @media print {
-  #navbar, #back-to-top, #cookie-consent, #scroll-progress, .no-print, footer { display: none !important; }
+  #navbar, #cookie-consent, #scroll-progress, .no-print, footer { display: none !important; }
   body { background: #fff !important; color: #000 !important; }
   .print-page { padding: 0 !important; }
 }

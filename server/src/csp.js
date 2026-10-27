@@ -4,7 +4,8 @@
    styles, frames etc. from, so injected markup can't run
    code. Inline <script> blocks are allowed by their SHA-256
    hash, worked out from the pages themselves, so editing a
-   page never needs a change here.
+   page never needs a change here. Public pages also allow
+   inline <script> elements for the Zoho chat (see sitePolicy).
 
    Used by the Node server (per response) and by
    deploy/make-htaccess.mjs, which writes the same site policy
@@ -53,6 +54,14 @@ export function sitePolicy(hashes, { upgradeInsecure = false } = {}) {
   return build({
     "default-src": ["'self'"],
     "script-src": ["'self'", ...hashes, "https://unpkg.com", ...ZOHO],
+    // The chat window adds an inline <script> with per-visitor settings
+    // (window._CONFVARIABLES), so no hash can match it and the chat hangs on
+    // its spinner without 'unsafe-inline'. A hash in the list would switch
+    // 'unsafe-inline' off, so <script> elements get their own list here.
+    // Browsers without script-src-elem fall back to script-src above.
+    "script-src-elem": ["'self'", "'unsafe-inline'", "https://unpkg.com", ...ZOHO],
+    // onclick="…" and friends stay blocked.
+    "script-src-attr": ["'none'"],
     // Inline style attributes are used throughout the pages and by the chat widget.
     "style-src": ["'self'", "'unsafe-inline'", FONTS_CSS, "https://unpkg.com", ...ZOHO],
     "font-src": ["'self'", "data:", FONTS, ...ZOHO],

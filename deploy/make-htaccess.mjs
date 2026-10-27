@@ -1,22 +1,71 @@
 /*
  * Writes .htaccess with the site's security headers, for static hosting
- * (Hostinger web hosting, where there is no Node server to send them).
+ * (Hostinger web hosting, which sends them from .htaccess).
  * build.ps1 runs this after building the pages, so the allowed inline
  * scripts always match the pages being uploaded.
  *
  *   node deploy/make-htaccess.mjs           write .htaccess
  *   node deploy/make-htaccess.mjs --check   fail if .htaccess is out of date
  *
- * The Content-Security-Policy is the same one the Node server sends
- * (server/src/csp.js).
+ * The Content-Security-Policy tells browsers which sources a page may load
+ * scripts, styles, frames etc. from, so injected markup can't run code.
  */
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { sitePolicy, inlineScriptHashes } from "../server/src/csp.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(ROOT, ".htaccess");
+
+// Zoho SalesIQ (chat widget) loads its code, styles, media and a
+// websocket from these Zoho domains.
+const ZOHO = ["https://*.zohopublic.in", "https://*.zoho.in", "https://*.zohocdn.com"];
+const VIDEO_FRAMES = ["https://www.youtube-nocookie.com", "https://player.vimeo.com"];
+
+// Hashes of the inline scripts in a page. JSON-LD blocks are data, not
+// code, so they don't need one. Browsers hash the script after turning
+// CRLF line endings into LF, so the same is done here.
+function inlineScriptHashes(html) {
+  const hashes = new Set();
+  for (const [, attrs, body] of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    if (/\bsrc\s*=/i.test(attrs) || /application\/ld\+json/i.test(attrs)) continue;
+    const digest = crypto.createHash("sha256").update(body.replace(/\r\n?/g, "\n"), "utf8").digest("base64");
+    hashes.add(`'sha256-${digest}'`);
+  }
+  return [...hashes];
+}
+
+function sitePolicy(hashes) {
+  const directives = {
+    "default-src": ["'self'"],
+    "script-src": ["'self'", ...hashes, "https://unpkg.com", ...ZOHO],
+    // The chat window adds an inline <script> with per-visitor settings
+    // (window._CONFVARIABLES), so no hash can match it and the chat hangs on
+    // its spinner without 'unsafe-inline'. A hash in the list would switch
+    // 'unsafe-inline' off, so <script> elements get their own list here.
+    // Browsers without script-src-elem fall back to script-src above.
+    "script-src-elem": ["'self'", "'unsafe-inline'", "https://unpkg.com", ...ZOHO],
+    // onclick="…" and friends stay blocked.
+    "script-src-attr": ["'none'"],
+    // Inline style attributes are used throughout the pages and by the chat widget.
+    "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com", ...ZOHO],
+    "font-src": ["'self'", "data:", "https://fonts.gstatic.com", ...ZOHO],
+    "img-src": ["'self'", "data:", "blob:", "https:"],
+    "media-src": ["'self'", "blob:", ...ZOHO],
+    // Forms post to Bigin and formsubmit.co directly (see MagzestForm in js/main.js).
+    "connect-src": ["'self'", ...ZOHO, "wss://*.zohopublic.in", "wss://*.zoho.in", "https://formsubmit.co", "https://bigin.zoho.in"],
+    "frame-src": [...VIDEO_FRAMES, ...ZOHO],
+    "frame-ancestors": ["'self'"],
+    "base-uri": ["'self'"],
+    "object-src": ["'none'"],
+    "form-action": ["'self'"],
+    "upgrade-insecure-requests": [],
+  };
+  return Object.entries(directives)
+    .map(([name, sources]) => [name, ...sources].join(" "))
+    .join("; ");
+}
 
 const pages = fs.readdirSync(ROOT).filter((f) => f.endsWith(".html")).sort();
 const hashes = new Set();
@@ -33,7 +82,7 @@ if (problems.length) {
 }
 
 const headers = {
-  "Content-Security-Policy": sitePolicy([...hashes].sort(), { upgradeInsecure: true }),
+  "Content-Security-Policy": sitePolicy([...hashes].sort()),
   // No includeSubDomains: other subdomains (e.g. email autodiscover) aren't ours to force onto HTTPS.
   "Strict-Transport-Security": "max-age=31536000",
   "X-Content-Type-Options": "nosniff",

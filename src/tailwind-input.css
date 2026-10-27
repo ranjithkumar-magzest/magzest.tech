@@ -4,7 +4,6 @@
 @source "../*.html";
 @source "../pages/*.html";
 @source "../js/**/*.js";
-@source "../server/src/render/**/*.js";
 
 @theme {
   --font-sans: Inter, sans-serif;

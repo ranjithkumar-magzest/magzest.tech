@@ -2,9 +2,8 @@
    Magzest — Careers page behaviour
    Wires "Apply Now" job buttons to the application form,
    validates the form on submit, previews the uploaded resume
-   file name, and submits to the Magzest server
-   (POST /api/forms/application), which stores the resume and
-   emails the team with it attached.
+   file name, and sends the application through FormSubmit,
+   which emails it to the team with the resume attached.
    ========================================================= */
 
 (function () {
@@ -69,10 +68,10 @@
         form.classList.add("hidden");
         if (successBox) successBox.classList.remove("hidden");
       })
-      .catch((err) => {
+      .catch(() => {
         submitBtn.disabled = false;
         if (submitLabel) submitLabel.textContent = "Submit Application";
-        if (errorBox && !err.fieldErrors) errorBox.classList.remove("hidden");
+        if (errorBox) errorBox.classList.remove("hidden");
       });
   });
 })();

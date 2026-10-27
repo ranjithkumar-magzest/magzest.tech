@@ -431,7 +431,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* =========================================================
-   Blog article body (rendered from Markdown by the server)
+   Blog article body
    ========================================================= */
 .post-body { color: #334155; font-size: 1.0625rem; line-height: 1.8; }
 .post-body > * + * { margin-top: 1.25em; }

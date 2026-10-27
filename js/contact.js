@@ -1,7 +1,7 @@
 /* =========================================================
    Magzest — Contact form
-   Validates client-side, then submits to the Magzest server
-   (POST /api/forms/contact), which saves it and emails the team.
+   Validates client-side, then sends the enquiry straight to
+   Bigin as a Contact (see MagzestForm in main.js).
    ========================================================= */
 
 (function () {
@@ -45,9 +45,9 @@
         form.classList.add("hidden");
         if (successBox) successBox.classList.remove("hidden");
       })
-      .catch((err) => {
+      .catch(() => {
         submitBtn.disabled = false;
-        if (submitLabel) submitLabel.textContent = err.fieldErrors ? "Send Message" : "Couldn't send — try again";
+        if (submitLabel) submitLabel.textContent = "Couldn't send — try again";
       });
   });
 })();

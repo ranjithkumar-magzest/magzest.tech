@@ -201,7 +201,7 @@
     });
   }
   // The consultation modal collects the same details as the contact page and
-  // is sent the same way (Magzest server if present, otherwise straight to Bigin).
+  // is sent the same way (straight to Bigin).
   if (bookingForm) {
     const bookingSubmitBtn = bookingForm.querySelector('button[type="submit"]');
     const bookingSubmitLabel = document.getElementById("booking-submit-label");
@@ -266,20 +266,8 @@
       if (submitBtn) submitBtn.disabled = true;
 
       window.MagzestForm.submit(form, "newsletter")
-        .then((result) => {
+        .then(() => {
           form.reset();
-          // The server sends a confirmation email first (double opt-in).
-          if (result && result.confirm) {
-            // Placed after the form, since the forms are single-row flex layouts.
-            let note = form.nextElementSibling;
-            if (!note || !note.classList.contains("form-note")) {
-              note = document.createElement("p");
-              note.className = "form-note text-xs mt-2";
-              note.setAttribute("role", "status");
-              form.insertAdjacentElement("afterend", note);
-            }
-            note.textContent = "Almost done: check your inbox and click the link to confirm.";
-          }
           if (submitBtn) {
             submitBtn.classList.add("newsletter-subscribed");
             setTimeout(() => {
@@ -288,9 +276,9 @@
             }, 2000);
           }
         })
-        .catch((err) => {
+        .catch(() => {
           if (submitBtn) submitBtn.disabled = false;
-          if (!err.fieldErrors) window.MagzestForm.showError(emailInput, "Something went wrong — please try again.");
+          window.MagzestForm.showError(emailInput, "Something went wrong — please try again.");
         });
     });
   });
@@ -345,14 +333,10 @@
 
   /* ---------- Generic form validation helper ---------- */
   window.MagzestForm = {
-    // Forms post to the Magzest server (server/). Set window.MAGZEST_API_BASE
-    // before this script only if the API runs on a different origin.
-    API_BASE: window.MAGZEST_API_BASE || "",
-    // When the site is hosted as plain static files there is no /api, so
-    // forms go to FormSubmit instead (form ID tied to contact@magzest.tech).
+    // The site is plain static files, so forms are sent to FormSubmit
+    // (form ID tied to contact@magzest.tech), which emails them to the team.
     FORMSUBMIT_URL: "https://formsubmit.co/ajax/1bd2a3fa-5299-44c1-aba9-b88f9db64c74",
     // Contact and consultation leads are copied to the whole team.
-    // Keep in step with LEADS_EMAIL in server/src/config.js.
     LEADS_CC: "ranjithkumar@magzest.in,nithin@magzest.tech,hameed@magzest.tech,srilatha@magzest.tech,harini@magzest.tech",
     SUBJECTS: {
       contact: "New contact form submission — Magzest website",
@@ -374,14 +358,14 @@
         });
     },
     // Bigin "Contact us" web form. These keys are public: they're in the
-    // hosted form's page source. Keep in step with deploy/setup-vps.sh.
+    // hosted form's page source.
     BIGIN: {
       URL: "https://bigin.zoho.in/crm/WebForm",
       xnQsjsdp: "0f1973ac752a5fda9ba5c0722cb0c68456a08d5de2c26a3cc9adee4f6de250f4",
       xmIwtLD: "1285e445112b8d9f854d6e3d70003655577adbe3544a5544801849d029d7fe759c025d416a1c97eeaa559d56a06a155a",
       actionType: "Q29udGFjdHM=",
     },
-    // Static hosting (no /api): contact leads go straight to Bigin as a Contact.
+    // Contact leads go straight to Bigin as a Contact.
     submitToBigin(form) {
       const f = new FormData(form);
       if (f.get("_honey")) return Promise.resolve({ ok: true });
@@ -407,39 +391,10 @@
       // still reaches Bigin, and only a network failure rejects.
       return fetch(this.BIGIN.URL, { method: "POST", mode: "no-cors", body: data }).then(() => ({ ok: true }));
     },
-    // Resolves on success; on failure shows any per-field errors returned by
-    // the server and rejects with err.fieldErrors set (or unset for network/server errors).
+    // Contact leads go to Bigin; everything else is emailed through FormSubmit.
+    // Resolves on success, rejects on failure.
     submit(form, kind) {
-      const NO_SERVER = [404, 405, 501];
-      const fallback = () => (kind === "contact" ? this.submitToBigin(form) : this.submitToFormSubmit(form, kind));
-      return fetch(`${this.API_BASE}/api/forms/${kind}`, {
-        method: "POST",
-        headers: { Accept: "application/json" },
-        body: new FormData(form),
-      }).then(
-        (res) => {
-          // Static hosts answer /api with an error page (or plain HTML), not JSON.
-          const isJson = (res.headers.get("content-type") || "").includes("application/json");
-          if (NO_SERVER.includes(res.status) || !isJson) return fallback();
-          return res
-            .json()
-            .catch(() => ({}))
-            .then((body) => {
-              if (res.ok && body.ok) return body;
-              if (body.errors) {
-                Object.entries(body.errors).forEach(([name, message]) => {
-                  let field = form.elements[name];
-                  // Radio groups come back as a RadioNodeList; show the error under the group.
-                  if (field && !field.classList) field = (field[0] && field[0].closest("[data-error-target]")) || field[0];
-                  if (field) this.showError(field, message);
-                });
-              }
-              throw Object.assign(new Error(body.error || "Submission failed"), { fieldErrors: body.errors });
-            });
-        },
-        // Network failure (e.g. opened from file://): no server to reach.
-        fallback
-      );
+      return kind === "contact" ? this.submitToBigin(form) : this.submitToFormSubmit(form, kind);
     },
     validateEmail: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
     showError(input, message) {

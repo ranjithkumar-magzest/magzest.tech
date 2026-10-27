@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@import "../css/style.css";
+
+@source "../*.html";
+@source "../pages/*.html";
+@source "../js/**/*.js";
+@source "../server/src/render/**/*.js";
+
+@theme {
+  --font-sans: Inter, sans-serif;
+  --font-heading: Poppins, sans-serif;
+  --color-blue-900: #000033;
+}

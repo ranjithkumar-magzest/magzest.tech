@@ -1,0 +1,462 @@
+/* =========================================================
+   Magzest — Corporate Stylesheet
+   Works alongside Tailwind CSS (utility classes in HTML).
+   Design language: monochrome base with a navy accent used
+   deliberately for glow/glass moments on interactive elements
+   (buttons, navbar). Holds design tokens, a handful of
+   reusable component styles Tailwind can't express directly
+   (navbar, cards, FAQ, carousel, marquee, modals) and print
+   styles for the company profile page.
+   ========================================================= */
+
+:root {
+  /* Brand palette — monochrome base + a single navy accent, light mode */
+  --color-primary: 0 0 51;           /* #000033 — the brand navy accent */
+  --color-primary-dark: 0 0 26;      /* #00001a — navy hover/darker state */
+  --color-secondary: 37 99 235;      /* blue-600 — secondary accent (borders, chips) */
+  --color-accent: 96 165 250;        /* blue-400 — lightest accent tint */
+  --color-logo: 0 0 51;              /* #000033 — matches the brand navy accent */
+
+  --bg-body: 255 255 255;
+  --bg-surface: 255 255 255;
+  --card-glass-bg: 15 23 42;
+  --card-glass-alpha: 0.04;
+  --text-body: 15 23 42;             /* slate-900 */
+  --text-muted: 71 85 105;           /* slate-500 */
+  --border-soft: 226 232 240;        /* slate-200 */
+
+  --shadow-soft: 0 10px 30px -10px rgba(15, 23, 42, 0.12);
+  --shadow-lift: 0 24px 48px -16px rgba(15, 23, 42, 0.22);
+  --nav-height: 76px;
+}
+
+* { scroll-behavior: smooth; }
+
+body {
+  background-color: rgb(var(--bg-body));
+  color: rgb(var(--text-body));
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* AOS fade-left elements start 100px off to the right; on phones that
+   widened the page until they animated in. clip (unlike hidden) keeps
+   position: sticky working; hidden stays as the fallback. */
+html, body {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: 'Poppins', 'Space Grotesk', sans-serif;
+}
+
+.logo-word { color: rgb(var(--color-logo)); }
+
+/* =========================================================
+   Custom scrollbar — monochrome
+   ========================================================= */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-secondary));
+  border-radius: 999px;
+}
+
+/* =========================================================
+   Scroll progress bar (fixed under navbar)
+   ========================================================= */
+#scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: rgb(var(--color-primary));
+  z-index: 9999;
+  transition: width 0.1s ease-out;
+}
+
+/* =========================================================
+   Sticky navbar — real glassmorphism: translucent surface
+   with a backdrop blur, so page content shows through faintly.
+   Falls back to a solid surface if backdrop-filter isn't
+   supported.
+   ========================================================= */
+.navbar-glass {
+  background: rgb(var(--bg-surface) / 0.72);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  border-bottom: 1px solid rgb(var(--border-soft) / 1);
+  transition: box-shadow 0.25s ease, background-color 0.25s ease;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .navbar-glass { background: rgb(var(--bg-surface)); }
+}
+.navbar-glass.scrolled {
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+}
+
+.nav-link { position: relative; }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -4px;
+  width: 0%; height: 2px;
+  background: rgb(var(--color-primary));
+  transition: width 0.25s ease;
+  border-radius: 999px;
+}
+.nav-link:hover::after, .nav-link.active::after { width: 100%; }
+.nav-link.active { color: rgb(var(--color-primary)); font-weight: 600; }
+
+/* =========================================================
+   Cards — flat surface, hairline border, subtle lift on hover.
+   "glass-card" name kept for markup compatibility but now a
+   plain bordered surface (no blur/transparency).
+   ========================================================= */
+.glass-card {
+  background: rgb(var(--bg-surface));
+  border: 1px solid rgb(var(--border-soft));
+}
+
+.neon-glow-hover { transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease; }
+.neon-glow-hover:hover {
+  box-shadow: var(--shadow-soft);
+  border-color: rgb(var(--color-secondary) / 0.4);
+  transform: translateY(-3px);
+}
+
+/* =========================================================
+   Flat brand banner background (replaces animated gradient)
+   ========================================================= */
+.gradient-bg {
+  background: rgb(var(--color-primary));
+}
+
+.card-tilt {
+  transition: transform 0.3s cubic-bezier(.2,.8,.2,1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card-tilt:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lift);
+  border-color: rgb(var(--color-primary) / 0.3);
+}
+
+/* Icon lift on card hover */
+.icon-bounce { transition: transform 0.25s ease; }
+.group:hover .icon-bounce { transform: translateY(-3px); }
+
+/* Arrow/chevron nudge on hover — used inside links & buttons site-wide */
+.icon-slide { transition: transform 0.25s ease; }
+a:hover .icon-slide, button:hover .icon-slide { transform: translateX(4px); }
+
+/* =========================================================
+   CTA buttons — subtle lift + soft navy glow on hover
+   ========================================================= */
+.btn-glow { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.btn-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -10px rgb(var(--color-primary) / 0.5);
+}
+.btn-glow:active { transform: translateY(0); box-shadow: none; }
+
+/* =========================================================
+   Form validation feedback — warning state + shake cue
+   ========================================================= */
+@keyframes formShake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+.form-shake { animation: formShake 0.4s ease; }
+.form-error { display: flex; align-items: center; gap: 4px; }
+.form-error::before { content: "\26A0"; font-size: 11px; line-height: 1; }
+.newsletter-subscribed { background-color: rgb(16 185 129) !important; color: #fff !important; }
+
+/* =========================================================
+   Homepage hero — monochrome isometric 3D illustration.
+   Pure CSS 3D transforms (perspective + translateZ), no
+   images/WebGL: a tilted "dashboard" card and a "mobile" card
+   layered in front of it, floating stat chips around them,
+   and two faint depth rings behind. Strictly grayscale to
+   match the site's black & white identity.
+   ========================================================= */
+.hero-3d-scene { perspective: 1800px; }
+.hero-3d-stage {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  transform-style: preserve-3d;
+  transform: rotateX(10deg) rotateY(-20deg);
+  animation: heroStageFloat 8s ease-in-out infinite;
+}
+@keyframes heroStageFloat {
+  0%, 100% { transform: rotateX(10deg) rotateY(-20deg) translateY(0); }
+  50% { transform: rotateX(10deg) rotateY(-20deg) translateY(-14px); }
+}
+
+.iso-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgb(var(--border-soft));
+  transform-style: preserve-3d;
+}
+.iso-ring-1 { width: 420px; height: 420px; top: -50px; left: -50px; transform: translateZ(-70px); }
+.iso-ring-2 { width: 340px; height: 340px; top: -10px; left: -10px; transform: translateZ(-35px); }
+
+.iso-monitor {
+  position: absolute;
+  top: 10px; left: 0;
+  width: 300px;
+  background: rgb(var(--bg-surface));
+  border: 1px solid rgb(var(--border-soft));
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 40px 70px -20px rgba(0, 0, 0, 0.35);
+  transform: translateZ(40px);
+}
+.iso-monitor-bar { display: flex; gap: 6px; margin-bottom: 14px; }
+.iso-monitor-bar span { width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgb(var(--border-soft)); }
+.iso-monitor-stand { width: 64px; height: 14px; margin: 16px auto 0; background: rgb(var(--border-soft)); border-radius: 4px; }
+
+.iso-line { height: 8px; border-radius: 999px; background: rgb(var(--border-soft)); margin-bottom: 8px; }
+
+.iso-bars { display: flex; align-items: flex-end; gap: 8px; height: 80px; margin-top: 14px; }
+.iso-bars span { flex: 1; border-radius: 3px 3px 0 0; background: rgb(var(--color-secondary) / 0.5); }
+.iso-bars span:nth-child(4) { background: rgb(var(--color-primary)); }
+
+.iso-mobile {
+  position: absolute;
+  bottom: -20px; right: -30px;
+  width: 120px;
+  background: rgb(var(--bg-surface));
+  border: 1px solid rgb(var(--border-soft));
+  border-radius: 22px;
+  padding: 18px 14px;
+  box-shadow: 0 30px 60px -18px rgba(0, 0, 0, 0.35);
+  transform: translateZ(90px);
+}
+.iso-mobile-notch { width: 36px; height: 5px; border-radius: 999px; background: rgb(var(--border-soft)); margin: 0 auto 18px; }
+.iso-mobile-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgb(var(--color-secondary) / 0.5); margin-top: 18px; }
+
+.iso-chip {
+  position: absolute;
+  background: rgb(var(--bg-surface));
+  border: 1px solid rgb(var(--border-soft));
+  border-radius: 14px;
+  padding: 12px 16px;
+  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.25);
+  transform: translateZ(130px);
+  animation: isoChipFloat 6s ease-in-out infinite;
+}
+.iso-chip-1 { top: -20px; left: -40px; animation-delay: 0s; }
+.iso-chip-2 { top: 50px; right: -60px; animation-delay: 1.3s; }
+.iso-chip-3 { bottom: 10px; left: -60px; animation-delay: 2.6s; }
+@keyframes isoChipFloat {
+  0%, 100% { transform: translateZ(130px) translateY(0); }
+  50% { transform: translateZ(130px) translateY(-10px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-3d-stage, .iso-chip, .float-chip, .mock-stage::before, .mock-flow-line, .mock-bar { animation: none; }
+  .mock-tilt { transition: none; }
+}
+@media (max-width: 1279px) {
+  .hero-3d-stage { transform: scale(0.85) rotateX(10deg) rotateY(-20deg); }
+}
+
+/* =========================================================
+   Services page — premium mockup treatment: soft glow behind
+   the frame, a slight tilt that eases flat on hover, and a
+   floating stat chip (same visual language as the hero's
+   iso-chip badges) for depth without needing real screenshots.
+   ========================================================= */
+.mock-stage { position: relative; isolation: isolate; }
+.mock-stage::before {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  background: radial-gradient(circle, rgb(var(--color-secondary) / 0.35), transparent 70%);
+  filter: blur(36px);
+  z-index: -1;
+  animation: driftGlow 7s ease-in-out infinite;
+}
+@keyframes driftGlow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(8px, -10px) scale(1.12); }
+}
+.mock-tilt {
+  transform: perspective(1000px) rotateY(-8deg) rotateX(3deg);
+  transition: transform 0.15s ease-out;
+}
+
+.float-chip {
+  position: absolute;
+  background: rgb(var(--bg-surface));
+  border: 1px solid rgb(var(--border-soft));
+  border-radius: 14px;
+  padding: 8px 14px;
+  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.3);
+  animation: floatChip 5s ease-in-out infinite;
+  z-index: 2;
+}
+@keyframes floatChip {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Flowing "live data" dashes on the IT consulting network diagram */
+.mock-flow-line {
+  stroke-dasharray: 6 6;
+  animation: flowDash 1.2s linear infinite;
+}
+@keyframes flowDash { to { stroke-dashoffset: -24; } }
+
+/* Pulsing bars on chart mockups (marketing dashboard + hero) */
+.mock-bar { transform-origin: bottom; animation: barPulse 2.2s ease-in-out infinite; }
+@keyframes barPulse {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.1); }
+}
+
+/* =========================================================
+   Timeline (About page)
+   ========================================================= */
+.timeline-line { background: rgb(var(--border-soft)); }
+.timeline-dot { box-shadow: 0 0 0 6px rgb(var(--color-primary) / 0.1); }
+
+/* =========================================================
+   Infinite marquee (client logos / tech stack)
+   ========================================================= */
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 32s linear infinite;
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.tech-chip {
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.tech-chip:hover {
+  transform: translateY(-2px);
+  border-color: rgb(var(--color-secondary) / 0.5);
+}
+
+/* =========================================================
+   Portfolio filter grid
+   ========================================================= */
+.project-card { transition: opacity 0.4s ease, transform 0.4s ease; }
+.filter-btn { transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+.filter-btn.active {
+  background: rgb(var(--color-primary));
+  color: #fff;
+  border-color: rgb(var(--color-primary));
+}
+
+/* =========================================================
+   Generic modal overlay (booking modal)
+   ========================================================= */
+.modal-overlay { transition: opacity 0.3s ease; }
+.modal-overlay .popup-card { transition: transform 0.3s cubic-bezier(.2,.8,.2,1), opacity 0.3s ease; }
+.modal-overlay.hidden-state { opacity: 0; pointer-events: none; }
+.modal-overlay.hidden-state .popup-card { transform: scale(0.94) translateY(16px); opacity: 0; }
+
+/* =========================================================
+   FAQ accordion
+   ========================================================= */
+.faq-item { transition: border-color 0.2s ease; }
+.faq-question { cursor: pointer; }
+.faq-icon { transition: transform 0.3s ease; }
+.faq-item.open .faq-icon { transform: rotate(45deg); }
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(.2,.8,.2,1), opacity 0.3s ease, padding 0.3s ease;
+  opacity: 0;
+}
+.faq-item.open .faq-answer { opacity: 1; }
+
+/* =========================================================
+   Cookie consent banner
+   ========================================================= */
+#cookie-consent {
+  /* Floating card: slide past its own bottom offset so it's fully off-screen */
+  transform: translateY(calc(100% + 2rem));
+  transition: transform 0.5s cubic-bezier(.2,.8,.2,1);
+}
+#cookie-consent.visible { transform: translateY(0); }
+
+/* =========================================================
+   Scroll reveal. main.js strips data-aos when AOS fails to
+   load or the visitor prefers reduced motion.
+   ========================================================= */
+[data-aos] { transition-property: opacity, transform; }
+
+/* =========================================================
+   Services page — themed visual panels (grayscale + blue glow)
+   ========================================================= */
+.service-visual { border-color: transparent !important; }
+.service-visual-webdev {
+  background: radial-gradient(circle at 75% 20%, rgba(59,130,246,0.35), transparent 60%), linear-gradient(135deg, #27272a 0%, #18181b 100%);
+}
+.service-visual-ai {
+  background: radial-gradient(circle at 20% 80%, rgba(148,163,184,0.3), transparent 55%), radial-gradient(circle at 80% 20%, rgba(59,130,246,0.35), transparent 55%), linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+.service-visual-seo {
+  background: linear-gradient(160deg, #1e3a8a 0%, #0f172a 100%);
+}
+
+/* =========================================================
+   Section badge
+   ========================================================= */
+.badge-eyebrow {
+  letter-spacing: 0.1em;
+}
+
+/* =========================================================
+   Focus states for accessibility
+   ========================================================= */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   Blog article body (rendered from Markdown by the server)
+   ========================================================= */
+.post-body { color: #334155; font-size: 1.0625rem; line-height: 1.8; }
+.post-body > * + * { margin-top: 1.25em; }
+.post-body h2 { font-family: Poppins, sans-serif; font-weight: 700; font-size: 1.6rem; line-height: 1.3; color: #0f172a; margin-top: 2em; }
+.post-body h3 { font-family: Poppins, sans-serif; font-weight: 600; font-size: 1.25rem; line-height: 1.4; color: #0f172a; margin-top: 1.75em; }
+.post-body a { color: #000033; text-decoration: underline; text-underline-offset: 2px; }
+.post-body strong { color: #0f172a; font-weight: 600; }
+.post-body ul, .post-body ol { padding-left: 1.5em; }
+.post-body ul { list-style: disc; }
+.post-body ol { list-style: decimal; }
+.post-body li + li { margin-top: 0.4em; }
+.post-body blockquote { border-left: 3px solid #000033; padding-left: 1em; color: #475569; font-style: italic; }
+.post-body img { border-radius: 0.75rem; max-width: 100%; height: auto; }
+.post-body code { background: #f1f5f9; border-radius: 0.25rem; padding: 0.1em 0.35em; font-size: 0.9em; }
+.post-body pre { background: #0f172a; color: #e2e8f0; border-radius: 0.75rem; padding: 1em 1.25em; overflow-x: auto; font-size: 0.9rem; }
+.post-body pre code { background: none; padding: 0; }
+.post-body hr { border-color: #e2e8f0; margin: 2.5em 0; }
+.post-body table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.post-body th, .post-body td { border: 1px solid #e2e8f0; padding: 0.5em 0.75em; text-align: left; }
+
+/* =========================================================
+   Print styles (Company Profile PDF download)
+   ========================================================= */
+@media print {
+  #navbar, #back-to-top, #cookie-consent, #scroll-progress, .no-print, footer { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .print-page { padding: 0 !important; }
+}

@@ -6,7 +6,7 @@
 
 ```powershell
 .\build.ps1
-python deploy\make_bundle.py        # creates dist\magzest-deploy-<date>.zip
+node deploy\make-bundle.mjs         # creates dist\magzest-deploy-<date>.zip
 ```
 
 ## 2. Upload it and run the setup script

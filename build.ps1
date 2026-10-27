@@ -6,6 +6,6 @@ $root = $PSScriptRoot
 
 & "$root\build-css.ps1"
 & "$root\build-js.ps1"
-python "$root\build_html.py"
+node "$root\build-html.mjs"
 # Security headers for static hosting; must follow the HTML build.
 node "$root\deploy\make-htaccess.mjs"
